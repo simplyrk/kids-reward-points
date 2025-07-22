@@ -17,28 +17,32 @@ export async function GET(req: Request) {
     let points
 
     if (session.user.role === "PARENT") {
-      // Parent can see their children's points
-      const children = await prisma.user.findMany({
-        where: { parentId: session.user.id },
-        select: { id: true }
-      })
-      
-      const childIds = children.map((child: {id: string}) => child.id)
-      
-      points = await prisma.point.findMany({
-        where: {
-          userId: userId ? userId : { in: childIds }
-        },
+      // Optimized single query for parent's children points
+      const parent = await prisma.user.findUnique({
+        where: { id: session.user.id },
         include: {
-          user: {
-            select: { name: true, email: true, avatar: true }
-          },
-          givenBy: {
-            select: { name: true, email: true }
+          children: {
+            include: {
+              points: {
+                where: userId ? { userId } : undefined,
+                include: {
+                  user: {
+                    select: { name: true, email: true, avatar: true }
+                  },
+                  givenBy: {
+                    select: { name: true, email: true }
+                  }
+                },
+                orderBy: { createdAt: "desc" },
+                take: 50 // Limit for performance
+              }
+            }
           }
-        },
-        orderBy: { createdAt: "desc" }
+        }
       })
+      
+      // Flatten points from all children
+      points = parent?.children.flatMap(child => child.points) || []
     } else {
       // Kids can only see their own points
       points = await prisma.point.findMany({

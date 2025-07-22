@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { ThemeToggle } from '@/app/components/theme-toggle'
@@ -28,6 +28,17 @@ import {
 import { Label } from '@/components/ui/label'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
+import ChildActivityCard from './components/ChildActivityCard'
+
+// Constants moved outside component for performance
+const CHILD_COLORS = [
+  'from-blue-400 to-blue-600',
+  'from-purple-400 to-purple-600', 
+  'from-green-400 to-green-600',
+  'from-pink-400 to-pink-600',
+  'from-orange-400 to-orange-600',
+  'from-indigo-400 to-indigo-600'
+] as const
 
 interface Point {
   id: string
@@ -90,13 +101,21 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const [viewAsChildId, setViewAsChildId] = useState<string | null>(null)
 
   const isParent = user.role === 'PARENT' && !viewAsChildId
-  const viewingChild = viewAsChildId ? children.find(c => c.id === viewAsChildId) : null
-  const effectivePoints = viewingChild ? viewingChild.points : (user.role === 'KID' ? points : [])
+  const viewingChild = useMemo(() => 
+    viewAsChildId ? children.find(c => c.id === viewAsChildId) : null, 
+    [viewAsChildId, children]
+  )
+  const effectivePoints = useMemo(() => 
+    viewingChild ? viewingChild.points : (user.role === 'KID' ? points : []), 
+    [viewingChild, user.role, points]
+  )
   
-  const totalPoints = isParent 
-    ? children.reduce((total, child) => 
-        total + child.points.reduce((sum, point) => sum + point.amount, 0), 0)
-    : effectivePoints.reduce((sum, point) => sum + point.amount, 0)
+  const totalPoints = useMemo(() => {
+    return isParent 
+      ? children.reduce((total, child) => 
+          total + child.points.reduce((sum, point) => sum + point.amount, 0), 0)
+      : effectivePoints.reduce((sum, point) => sum + point.amount, 0)
+  }, [isParent, children, effectivePoints])
 
   // Fetch activity requests
   useEffect(() => {
@@ -120,16 +139,19 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   }
 
 
-  const weeklyPoints = isParent
-    ? children.reduce((total, child) =>
-        total + child.points
-          .filter(point => new Date(point.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
-          .reduce((sum, point) => sum + point.amount, 0), 0)
-    : effectivePoints
-        .filter(point => new Date(point.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
-        .reduce((sum, point) => sum + point.amount, 0)
+  const weeklyPoints = useMemo(() => {
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+    return isParent
+      ? children.reduce((total, child) =>
+          total + child.points
+            .filter(point => new Date(point.createdAt).getTime() > weekAgo)
+            .reduce((sum, point) => sum + point.amount, 0), 0)
+      : effectivePoints
+          .filter(point => new Date(point.createdAt).getTime() > weekAgo)
+          .reduce((sum, point) => sum + point.amount, 0)
+  }, [isParent, children, effectivePoints])
 
-  const handleAddPoints = async (e: React.FormEvent) => {
+  const handleAddPoints = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!isParent) return
@@ -165,7 +187,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     } catch {
       toast.error('Failed to add points')
     }
-  }
+  }, [isParent, selectedChild, newPointsAmount, newPointsReason, setChildren])
 
   const handleSubmitActivity = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -270,7 +292,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     return `${month} ${day}, ${hour12.toString().padStart(2, '0')}:${formattedMinutes} ${ampm}`
   }
 
-  const getPointsIcon = (amount: number) => {
+  // eslint-disable-next-line react/display-name
+  const getPointsIcon = useMemo(() => (amount: number) => {
     if (amount < 0) {
       // Negative points - different colors for penalties
       if (amount <= -50) return <Trophy className="w-5 h-5 text-red-600" />
@@ -284,7 +307,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     if (amount >= 50) return <Award className="w-5 h-5 text-purple-500" />
     if (amount >= 25) return <Target className="w-5 h-5 text-blue-500" />
     return <Star className="w-5 h-5 text-green-500" />
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-background">
@@ -562,15 +585,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                       <Label className="text-base font-semibold">Select Child</Label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {children.map((child, index) => {
-                          const colors = [
-                            'from-blue-400 to-blue-600',
-                            'from-purple-400 to-purple-600', 
-                            'from-green-400 to-green-600',
-                            'from-pink-400 to-pink-600',
-                            'from-orange-400 to-orange-600',
-                            'from-indigo-400 to-indigo-600'
-                          ]
-                          const colorClass = colors[index % colors.length]
+                          const colorClass = CHILD_COLORS[index % CHILD_COLORS.length]
                           
                           return (
                             <button
@@ -880,45 +895,12 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     </Button>
                   </div>
                 ) : (
-                  children.map((child) => (
-                    <div key={child.id} style={{ paddingBottom: '1.5rem' }}>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                          {(child.name || 'C').charAt(0)}
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{child.name || 'Child'}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {child.points.reduce((sum, point) => sum + point.amount, 0)} total points
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="pl-11" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {child.points.slice(0, 3).map((point) => (
-                          <div key={point.id} className="flex items-center justify-between bg-muted rounded-lg" style={{ padding: '0.75rem' }}>
-                            <div className="flex items-center space-x-3">
-                              {getPointsIcon(point.amount)}
-                              <div>
-                                <p className={`font-medium text-sm ${point.amount >= 0 
-                                  ? 'text-green-600' 
-                                  : 'text-destructive'
-                                }`}>
-                                  {point.amount >= 0 ? '+' : ''}{point.amount} points
-                                </p>
-                                {point.description && (
-                                  <p className="text-xs text-muted-foreground">{point.description}</p>
-                                )}
-                              </div>
-                            </div>
-                            <span className="text-xs text-muted-foreground">{formatDate(point.createdAt)}</span>
-                          </div>
-                        ))}
-                        {child.points.length === 0 && (
-                          <p className="text-sm text-muted-foreground text-center py-2">No activity yet</p>
-                        )}
-                      </div>
-                    </div>
+                  children.map((child, index) => (
+                    <ChildActivityCard 
+                      key={child.id}
+                      child={child}
+                      formatDate={formatDate}
+                    />
                   ))
                 )
               ) : (

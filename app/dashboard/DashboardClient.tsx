@@ -471,7 +471,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
           <Card className="h-full relative" style={{ zIndex: 1 }}>
             <div className="flex flex-row items-center justify-between" style={{ padding: '1.5rem', paddingBottom: '0.5rem' }}>
               <h3 className="text-sm font-medium text-muted-foreground">
-                {viewAsChildId ? `${viewingChild?.name}&apos;s Points` : (isParent ? 'Total Family Points' : 'My Points')}
+                {viewAsChildId ? `${viewingChild?.name}'s Points` : (isParent ? 'Total Family Points' : 'My Points')}
               </h3>
               <Zap className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -895,7 +895,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     </Button>
                   </div>
                 ) : (
-                  children.map((child, index) => (
+                  children.map((child) => (
                     <ChildActivityCard 
                       key={child.id}
                       child={child}

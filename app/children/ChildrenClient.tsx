@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Plus, UserPlus, Star, Calendar, Eye, EyeOff, Copy, Home, LogOut } from 'lucide-react'
+import { Users, Plus, UserPlus, Star, Calendar, Eye, EyeOff, Copy, Home, LogOut, Key, X, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ThemeToggle } from '@/app/components/theme-toggle'
 
 interface Point {
@@ -25,6 +26,16 @@ interface Child {
   name: string | null
   email: string | null
   points: Point[]
+  childUsername?: string | null
+  createdAt?: string | Date
+}
+
+interface ChildCredentials {
+  id: string
+  name: string | null
+  childUsername: string | null
+  plainPassword: string | null
+  createdAt: string | Date
 }
 
 interface User {
@@ -46,6 +57,13 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState('')
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false)
+  const [selectedChildCredentials, setSelectedChildCredentials] = useState<ChildCredentials | null>(null)
+  const [loadingCredentials, setLoadingCredentials] = useState(false)
+  const [showChildPassword, setShowChildPassword] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [childToDelete, setChildToDelete] = useState<Child | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   // Suppress unused variable warning - router is kept for future use
   void router
@@ -116,6 +134,60 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
       toast.error(error instanceof Error ? error.message : 'Failed to add child')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const fetchChildCredentials = async (childId: string) => {
+    setLoadingCredentials(true)
+    try {
+      const response = await fetch('/api/children/credentials')
+      if (!response.ok) {
+        throw new Error('Failed to fetch credentials')
+      }
+      const data = await response.json()
+      const childCredentials = data.children.find((child: ChildCredentials) => child.id === childId)
+      if (childCredentials) {
+        setSelectedChildCredentials(childCredentials)
+        setShowCredentialsModal(true)
+        setShowChildPassword(false)
+      }
+    } catch {
+      toast.error('Failed to load credentials')
+    } finally {
+      setLoadingCredentials(false)
+    }
+  }
+
+  const copyToClipboard = (text: string, type: string) => {
+    if (typeof window !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      toast.success(`${type} copied!`)
+    }
+  }
+
+  const handleDeleteChild = async (childToDeleteParam?: Child) => {
+    const targetChild = childToDeleteParam || childToDelete
+    if (!targetChild) return
+    
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/children/${targetChild.id}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete child')
+      }
+      
+      // Remove child from local state
+      setChildren(prev => prev.filter(child => child.id !== targetChild.id))
+      toast.success(`${targetChild.name} has been removed`)
+      setShowDeleteModal(false)
+      setChildToDelete(null)
+    } catch {
+      toast.error('Failed to delete child')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -324,13 +396,13 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                     </div>
                   </div>
                   
-                  <div className="rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/50">
+                  <div className="rounded-md border border-gray-800 bg-gray-800 p-4 dark:border-blue-800 dark:bg-blue-950/50">
                     <div className="flex">
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        <h3 className="text-sm font-medium !text-white dark:text-blue-200" style={{ color: 'white !important' }}>
                           Login Information
                         </h3>
-                        <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                        <div className="mt-2 text-sm !text-white dark:text-blue-300" style={{ color: 'white !important' }}>
                           <p>Username: Auto-generated (e.g., john1234)</p>
                           <p>Password: Use the generated password above</p>
                         </div>
@@ -338,8 +410,8 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                     </div>
                   </div>
                   
-                  <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-                    <UserPlus className="w-4 h-4 mr-2" />
+                  <Button type="submit" disabled={isLoading} size="lg" className="w-full md:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg">
+                    <UserPlus className="w-5 h-5 mr-2" />
                     {isLoading ? 'Adding...' : 'Add Child Account'}
                   </Button>
                 </motion.form>
@@ -382,7 +454,6 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                       </span>
                     </div>
                     <CardTitle className="text-base">{child.name || 'Unknown Child'}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{child.email || 'No email'}</p>
                   </CardHeader>
                   <CardContent className="space-y-4" style={{ padding: '1.5rem', paddingTop: '0' }}>
                     <div className="grid grid-cols-2 gap-4 text-center">
@@ -419,6 +490,31 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                         ))}
                       </div>
                     )}
+                    
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        onClick={() => fetchChildCredentials(child.id)}
+                        variant="outline"
+                        size="sm"
+                        disabled={loadingCredentials}
+                        className="flex-1"
+                      >
+                        <Key className="w-4 h-4 mr-2" />
+                        {loadingCredentials ? 'Loading...' : 'Login Info'}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setChildToDelete(child)
+                          setShowDeleteModal(true)
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                        type="button"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -426,6 +522,160 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
           </div>
         )}
         </section>
+
+        {/* Credentials Modal */}
+        <Dialog open={showCredentialsModal} onOpenChange={setShowCredentialsModal}>
+          <DialogContent className="max-w-lg !bg-white dark:!bg-gray-900 border border-gray-200 dark:border-gray-700" style={{ backgroundColor: 'white !important' }}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 !text-gray-900 dark:!text-gray-100">
+                <Key className="w-5 h-5" />
+                Login Information
+              </DialogTitle>
+              <DialogDescription className="!text-gray-700 dark:!text-gray-300">
+                Login credentials for {selectedChildCredentials?.name || 'this child'}. Keep this information safe.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedChildCredentials && (
+              <div className="space-y-4">
+                <div className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-white font-bold text-xl">
+                      {(selectedChildCredentials.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg">{selectedChildCredentials.name || 'Unknown Child'}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Added on {formatDate(selectedChildCredentials.createdAt || new Date())}
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Username</Label>
+                    <div className="flex items-center gap-2">
+                      <code className="px-3 py-2 !bg-gray-100 dark:!bg-gray-800 rounded text-sm font-mono flex-1 !border !border-gray-400 dark:!border-gray-600 !text-gray-900 dark:!text-gray-100" style={{ backgroundColor: '#f3f4f6 !important', borderColor: '#9ca3af !important', color: '#111827 !important' }}>
+                        {selectedChildCredentials.childUsername || 'Not set'}
+                      </code>
+                      {selectedChildCredentials.childUsername && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(selectedChildCredentials.childUsername!, 'Username')}
+                          className="!bg-gray-200 hover:!bg-gray-300 !text-gray-700 hover:!text-gray-900 !border !border-gray-300"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Password</Label>
+                    <div className="flex items-center gap-2">
+                      <code className="px-3 py-2 !bg-gray-100 dark:!bg-gray-800 rounded text-sm font-mono flex-1 !border !border-gray-400 dark:!border-gray-600 !text-gray-900 dark:!text-gray-100" style={{ backgroundColor: '#f3f4f6 !important', borderColor: '#9ca3af !important', color: '#111827 !important' }}>
+                        {showChildPassword 
+                          ? (selectedChildCredentials.plainPassword || 'Not available')
+                          : '•••••••••'
+                        }
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowChildPassword(!showChildPassword)}
+                        className="!bg-gray-200 hover:!bg-gray-300 !text-gray-700 hover:!text-gray-900 !border !border-gray-300"
+                      >
+                        {showChildPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      {showChildPassword && selectedChildCredentials.plainPassword && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(selectedChildCredentials.plainPassword!, 'Password')}
+                          className="!bg-gray-200 hover:!bg-gray-300 !text-gray-700 hover:!text-gray-900 !border !border-gray-300"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="rounded-md border border-blue-300 bg-blue-100 p-3 dark:border-blue-800 dark:bg-blue-950/50">
+                  <p className="text-sm text-blue-900 dark:text-blue-200">
+                    <strong>Security tip:</strong> Share these credentials securely with your child. 
+                    Consider using a secure method like writing it down or using a password manager.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCredentialsModal(false)}
+                className="!bg-white hover:!bg-gray-50 !text-gray-700 hover:!text-gray-900 !border !border-gray-300"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent className="max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <Trash2 className="w-5 h-5" />
+                Remove Child Account
+              </DialogTitle>
+              <DialogDescription className="text-gray-700 dark:text-gray-300">
+                Are you sure you want to remove <strong className="text-gray-900 dark:text-gray-100">{childToDelete?.name}</strong>?
+                This will permanently delete their account and all associated points and activity history.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="rounded-md border border-red-400 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/50">
+              <p className="text-sm text-red-800 dark:text-red-200">
+                <strong>Warning:</strong> This action cannot be undone. All data for this child will be permanently deleted.
+              </p>
+            </div>
+            
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setChildToDelete(null)
+                }}
+                disabled={isDeleting}
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteChild()}
+                disabled={isDeleting}
+                className="bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Removing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove Child
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

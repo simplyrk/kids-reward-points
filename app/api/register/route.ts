@@ -82,6 +82,7 @@ export async function POST(req: Request) {
         role,
         parentId: role === "KID" ? parentId : null,
         childUsername: role === "KID" ? childUsername : null,
+        plainPassword: role === "KID" ? password : null, // Store plain password for children only
         avatar: `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${role === "KID" ? childUsername : email}`
       }
     })

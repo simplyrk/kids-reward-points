@@ -24,6 +24,10 @@ model User {
   // For children, this is their unique username (e.g., "child1")
   childUsername String?   @unique
   
+  // Plain text password for children (so parents can view it)
+  // Only used for KID role, null for PARENT role
+  plainPassword String?
+  
   // Relations
   accounts      Account[]
   sessions      Session[]
@@ -32,7 +36,7 @@ model User {
   
   // Parent-child relationship
   parentId      String?
-  parent        User?     @relation("ParentChild", fields: [parentId], references: [id])
+  parent        User?     @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
   children      User[]    @relation("ParentChild")
   
   // Activity requests
@@ -79,10 +83,10 @@ model Point {
   
   // Relations
   userId        String
-  user          User      @relation("UserPoints", fields: [userId], references: [id])
+  user          User      @relation("UserPoints", fields: [userId], references: [id], onDelete: Cascade)
   
   givenById     String
-  givenBy       User      @relation("GivenByUser", fields: [givenById], references: [id])
+  givenBy       User      @relation("GivenByUser", fields: [givenById], references: [id], onDelete: Cascade)
   
   // Link to activity request if created from one
   activityRequest ActivityRequest?
@@ -104,11 +108,11 @@ model ActivityRequest {
   
   // Relations
   requestedById String
-  requestedBy   User      @relation("RequestedByUser", fields: [requestedById], references: [id])
+  requestedBy   User      @relation("RequestedByUser", fields: [requestedById], references: [id], onDelete: Cascade)
   
   // When approved/rejected
   reviewedById  String?
-  reviewedBy    User?     @relation("ReviewedByUser", fields: [reviewedById], references: [id])
+  reviewedBy    User?     @relation("ReviewedByUser", fields: [reviewedById], references: [id], onDelete: Cascade)
   reviewedAt    DateTime?
   
   // If approved, this links to the created point record

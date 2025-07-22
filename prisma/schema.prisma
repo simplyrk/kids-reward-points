@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  password      String
+  name          String?
+  role          Role      @default(KID)
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // For children, this is their unique username (e.g., "child1")
+  childUsername String?   @unique
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  points        Point[]   @relation("UserPoints")
+  givenPoints   Point[]   @relation("GivenByUser")
+  
+  // Parent-child relationship
+  parentId      String?
+  parent        User?     @relation("ParentChild", fields: [parentId], references: [id])
+  children      User[]    @relation("ParentChild")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Point {
+  id            String    @id @default(cuid())
+  amount        Int
+  description   String
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  userId        String
+  user          User      @relation("UserPoints", fields: [userId], references: [id])
+  
+  givenById     String
+  givenBy       User      @relation("GivenByUser", fields: [givenById], references: [id])
+}
+
+enum Role {
+  KID
+  PARENT
+}

@@ -214,7 +214,10 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
               <Users className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">Kiddie Rewards App</h1>
+            <h1 className="text-xl font-bold tracking-tight">
+              <span className="sm:hidden">KRP</span>
+              <span className="hidden sm:inline">Kiddie Rewards App</span>
+            </h1>
           </Link>
 
           <div className="flex items-center gap-6">

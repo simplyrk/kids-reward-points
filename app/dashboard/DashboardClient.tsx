@@ -324,7 +324,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
               {isParent ? <Users className="w-5 h-5 text-white" /> : <Sparkles className="w-5 h-5 text-white" />}
             </div>
             <h1 className="text-xl font-bold tracking-tight">
-              Kiddie Rewards App
+              <span className="sm:hidden">KRP</span>
+              <span className="hidden sm:inline">Kiddie Rewards App</span>
             </h1>
           </motion.div>
 

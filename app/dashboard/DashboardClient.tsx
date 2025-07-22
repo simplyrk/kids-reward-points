@@ -372,13 +372,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
           className="mb-8"
         >
           <h2 className="text-3xl font-bold tracking-tight mb-2">
-            {viewAsChildId ? `${viewingChild?.name}&apos;s Dashboard` : (isParent ? 'Family Dashboard' : 'My Points')}
+            {viewAsChildId ? `${viewingChild?.name}${"'s"} Dashboard` : (isParent ? 'Family Dashboard' : 'My Points')}
           </h2>
           <p className="text-muted-foreground">
             {viewAsChildId ? (
-              <span className="text-orange-600 font-medium">Viewing as {viewingChild?.name} - You&apos;re seeing what your child sees</span>
+              <span className="text-orange-600 font-medium">Viewing as {viewingChild?.name} - You{"'re"} seeing what your child sees</span>
             ) : (
-              <>Welcome back, {user.name || 'User'}! {isParent ? 'Track your family&apos;s progress and award points.' : 'Here&apos;s your current points and recent activity.'}</>
+              <>Welcome back, {user.name || 'User'}! {isParent ? `Track your family${"'s"} progress and award points.` : `Here${"'s"} your current points and recent activity.`}</>
             )}
           </p>
         </motion.div>

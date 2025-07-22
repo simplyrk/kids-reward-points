@@ -69,7 +69,7 @@ export default function RegisterPage() {
             </motion.div>
             <div className="space-y-2">
               <CardTitle className="text-2xl">Create Parent Account</CardTitle>
-              <p className="text-sm text-muted-foreground">Manage your children&apos;s reward points!</p>
+              <p className="text-sm text-muted-foreground">Manage your children{"'s"} reward points!</p>
             </div>
           </CardHeader>
           <CardContent style={{ padding: '2rem', paddingTop: '0' }}>

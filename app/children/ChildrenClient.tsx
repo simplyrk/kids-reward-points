@@ -247,7 +247,7 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
             Manage Children
           </h2>
           <p className="text-muted-foreground">
-            Add and manage your children&apos;s accounts. Create secure login credentials for each child.
+            Add and manage your children{"'s"} accounts. Create secure login credentials for each child.
           </p>
         </motion.div>
         {/* Stats Grid */}
@@ -335,7 +335,7 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="childName">Child&apos;s Name</Label>
+                      <Label htmlFor="childName">Child{"'s"} Name</Label>
                       <Input
                         id="childName"
                         type="text"

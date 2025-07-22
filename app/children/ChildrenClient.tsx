@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signOut } from 'next-auth/react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Plus, UserPlus, Star, Calendar, ArrowLeft, Eye, EyeOff, Copy, LogIn } from 'lucide-react'
+import { Users, Plus, UserPlus, Star, Calendar, ArrowLeft, Eye, EyeOff, Copy, LogIn, Home, ChevronRight, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -132,35 +134,28 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 border-b bg-background shadow-sm" style={{ zIndex: 9999 }}>
+      <header className="fixed top-0 left-0 right-0 h-16 border-b bg-background shadow-sm" style={{ zIndex: 9999, backgroundColor: 'hsl(var(--background))' }}>
         <div className="container flex h-full items-center justify-between" style={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.back()}
-              className="rounded-md p-2 hover:bg-muted transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="sr-only">Back</span>
-            </button>
-            
-            <div className="h-6 w-px bg-border" />
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold tracking-tight">Kiddie Rewards App</h1>
+          <Link href="/dashboard" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 text-white" />
             </div>
-          </div>
+            <h1 className="text-xl font-bold tracking-tight">Kiddie Rewards App</h1>
+          </Link>
 
           <div className="flex items-center gap-6">
-            <ThemeToggle />
-            
             <Button variant="ghost" size="sm" asChild>
               <a href="/dashboard">
-                <LogIn className="w-4 h-4 mr-2" />
-                Dashboard
+                <Home className="w-4 h-4 mr-2" />
+                Home
               </a>
+            </Button>
+            
+            <ThemeToggle />
+            
+            <Button variant="ghost" size="sm" onClick={() => signOut()}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
             </Button>
           </div>
         </div>

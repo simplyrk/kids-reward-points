@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Clock
 } from 'lucide-react'
+import { Label } from '@/components/ui/label'
 import toast from 'react-hot-toast'
 
 interface Point {
@@ -55,7 +56,6 @@ interface DashboardClientProps {
 export default function DashboardClient({ user }: DashboardClientProps) {
   const [points, setPoints] = useState<Point[]>(user.points || [])
   const [children, setChildren] = useState<Child[]>(user.children || [])
-  const [isAddingPoints, setIsAddingPoints] = useState(false)
   const [selectedChild, setSelectedChild] = useState<string>('')
   const [newPointsAmount, setNewPointsAmount] = useState('')
   const [newPointsReason, setNewPointsReason] = useState('')
@@ -153,7 +153,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 border-b bg-background shadow-sm" style={{ zIndex: 9999 }}>
+      <header className="fixed top-0 left-0 right-0 h-16 border-b bg-background shadow-sm" style={{ zIndex: 9999, backgroundColor: 'hsl(var(--background))' }}>
         <div className="container flex h-full items-center justify-between" style={{ paddingLeft: '2rem', paddingRight: '2rem' }}>
           <motion.div 
             className="flex items-center space-x-3"
@@ -302,68 +302,160 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             >
             <Card>
               <CardHeader style={{ padding: '1.5rem' }}>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center space-x-2">
-                    <Plus className="w-5 h-5" />
-                    <span>Quick Actions</span>
-                  </CardTitle>
-                  <Button
-                    onClick={() => setIsAddingPoints(!isAddingPoints)}
-                    variant={isAddingPoints ? "outline" : "default"}
-                    size="sm"
-                  >
-                    {isAddingPoints ? 'Cancel' : 'Award Points'}
-                  </Button>
-                </div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Plus className="w-5 h-5" />
+                  <span>Award Points</span>
+                </CardTitle>
               </CardHeader>
               
-              <AnimatePresence>
-                {isAddingPoints && (
-                  <CardContent style={{ padding: '1.5rem', paddingTop: '0' }}>
-                    <motion.form
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      onSubmit={handleAddPoints}
-                      className="grid grid-cols-1 md:grid-cols-4 gap-4"
-                    >
-                      <select
-                        value={selectedChild}
-                        onChange={(e) => setSelectedChild(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        required
-                      >
-                        <option value="">Choose a child</option>
-                        {children.map((child) => (
-                          <option key={child.id} value={child.id}>
-                            {child.name}
-                          </option>
+              <CardContent style={{ padding: '1.5rem', paddingTop: '0' }}>
+                {children.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No children yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Add your first child to start awarding points.
+                    </p>
+                    <Button asChild>
+                      <a href="/children">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Child
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleAddPoints} className="space-y-4">
+                    {/* Child Selection - Always at top */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold">Select Child</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {children.map((child, index) => {
+                          const colors = [
+                            'from-blue-400 to-blue-600',
+                            'from-purple-400 to-purple-600', 
+                            'from-green-400 to-green-600',
+                            'from-pink-400 to-pink-600',
+                            'from-orange-400 to-orange-600',
+                            'from-indigo-400 to-indigo-600'
+                          ]
+                          const colorClass = colors[index % colors.length]
+                          
+                          return (
+                            <button
+                              key={child.id}
+                              type="button"
+                              onClick={() => setSelectedChild(child.id)}
+                              className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                                selectedChild === child.id 
+                                  ? 'border-primary ring-2 ring-primary/20 bg-primary/5' 
+                                  : 'border-border hover:border-muted-foreground hover:bg-muted/30'
+                              }`}
+                            >
+                              <div className="flex flex-col items-center space-y-1">
+                                <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
+                                  {child.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="font-medium text-xs">{child.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {child.points.reduce((sum, point) => sum + point.amount, 0)} pts
+                                </span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Quick Reason Selection */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold">Reason <span className="text-destructive">*</span></Label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {[
+                          { label: '🏠 Chores', value: 'Completed chores' },
+                          { label: '📚 Homework', value: 'Finished homework' },
+                          { label: '🎯 Good Behavior', value: 'Good behavior' },
+                          { label: '🎉 Achievement', value: 'Special achievement' },
+                          { label: '🤝 Helping Others', value: 'Helped family member' },
+                          { label: '⭐ Extra Effort', value: 'Went above and beyond' },
+                          { label: '📖 Reading', value: 'Reading time' },
+                          { label: '❌ Penalty', value: 'Rule violation' }
+                        ].map((reason) => (
+                          <button
+                            key={reason.value}
+                            type="button"
+                            onClick={() => {
+                              setNewPointsReason(reason.value)
+                              // Auto-set points based on reason type
+                              if (reason.value === 'Rule violation') {
+                                setNewPointsAmount('-5')
+                              } else if (!newPointsAmount) {
+                                setNewPointsAmount('10')
+                              }
+                            }}
+                            className={`p-2 text-xs rounded-lg border transition-all duration-200 ${
+                              newPointsReason === reason.value
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border hover:border-muted-foreground hover:bg-muted/50'
+                            }`}
+                          >
+                            {reason.label}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                       
-                      <Input
-                        type="number"
-                        value={newPointsAmount}
-                        onChange={(e) => setNewPointsAmount(e.target.value)}
-                        placeholder="Points (e.g., 10 or -5)"
-                        required
-                      />
-                      
+                      {/* Custom Reason Input */}
                       <Input
                         type="text"
                         value={newPointsReason}
                         onChange={(e) => setNewPointsReason(e.target.value)}
-                        placeholder="Reason (optional)"
+                        placeholder="Or enter custom reason..."
+                        required
                       />
-                      
-                      <Button type="submit" className="w-full">
-                        Add Points
-                      </Button>
-                    </motion.form>
-                  </CardContent>
+                    </div>
+
+                    {/* Points Amount */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold">Points Amount</Label>
+                      <div className="flex gap-2 flex-wrap">
+                        {['+5', '+10', '+20', '-5'].map((amount) => (
+                          <button
+                            key={amount}
+                            type="button"
+                            onClick={() => setNewPointsAmount(amount.replace('+', ''))}
+                            className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 ${
+                              newPointsAmount === amount.replace('+', '')
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border hover:border-muted-foreground hover:bg-muted/50'
+                            }`}
+                          >
+                            {amount}
+                          </button>
+                        ))}
+                        <Input
+                          type="number"
+                          value={newPointsAmount}
+                          onChange={(e) => setNewPointsAmount(e.target.value)}
+                          placeholder="Custom"
+                          className="w-20"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Submit Button */}
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      size="lg"
+                      disabled={!selectedChild || !newPointsReason || !newPointsAmount}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Award {newPointsAmount ? `${newPointsAmount} ` : ''}Points
+                      {selectedChild && children.find(c => c.id === selectedChild) && ` to ${children.find(c => c.id === selectedChild)?.name}`}
+                    </Button>
+                  </form>
                 )}
-              </AnimatePresence>
+              </CardContent>
             </Card>
             </motion.div>
           </section>

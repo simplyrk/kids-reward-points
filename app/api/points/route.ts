@@ -23,7 +23,7 @@ export async function GET(req: Request) {
         select: { id: true }
       })
       
-      const childIds = children.map((child: any) => child.id)
+      const childIds = children.map((child: {id: string}) => child.id)
       
       points = await prisma.point.findMany({
         where: {

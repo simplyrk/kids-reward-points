@@ -165,4 +165,22 @@ body {
       transform: translateX(0);
     }
   }
+
+  /* Fix for toast visibility */
+  [data-sonner-toaster] {
+    z-index: 99999 !important;
+  }
+  
+  [data-sonner-toast] {
+    z-index: 99999 !important;
+  }
+
+  /* React hot toast specific fixes */
+  .__react-hot-toast-container {
+    z-index: 99999 !important;
+  }
+
+  .react-hot-toast {
+    z-index: 99999 !important;
+  }
 }

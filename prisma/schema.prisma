@@ -34,6 +34,10 @@ model User {
   parentId      String?
   parent        User?     @relation("ParentChild", fields: [parentId], references: [id])
   children      User[]    @relation("ParentChild")
+  
+  // Activity requests
+  activityRequests ActivityRequest[] @relation("RequestedByUser")
+  reviewedRequests ActivityRequest[] @relation("ReviewedByUser")
 }
 
 model Account {
@@ -75,9 +79,41 @@ model Point {
   
   givenById     String
   givenBy       User      @relation("GivenByUser", fields: [givenById], references: [id])
+  
+  // Link to activity request if created from one
+  activityRequest ActivityRequest?
+}
+
+model ActivityRequest {
+  id            String    @id @default(cuid())
+  activity      String    // The activity type (e.g., "Completed chores")
+  description   String    // Mandatory description of what was done
+  activityDate  DateTime  // Date when the activity was performed (allows backdating)
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  requestedById String
+  requestedBy   User      @relation("RequestedByUser", fields: [requestedById], references: [id])
+  
+  // When approved/rejected
+  reviewedById  String?
+  reviewedBy    User?     @relation("ReviewedByUser", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  
+  // If approved, this links to the created point record
+  pointId       String?   @unique
+  point         Point?    @relation(fields: [pointId], references: [id])
 }
 
 enum Role {
   KID
   PARENT
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

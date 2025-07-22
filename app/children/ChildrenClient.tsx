@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Plus, UserPlus, Star, Calendar, ArrowLeft, Eye, EyeOff, Copy, LogIn, Home, ChevronRight, LogOut } from 'lucide-react'
+import { Users, Plus, UserPlus, Star, Calendar, Eye, EyeOff, Copy, Home, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,21 +17,21 @@ interface Point {
   id: string
   amount: number
   description: string | null
-  createdAt: string
+  createdAt: string | Date
 }
 
 interface Child {
   id: string
-  name: string
-  email: string
+  name: string | null
+  email: string | null
   points: Point[]
 }
 
 interface User {
   id: string
-  name: string
-  email: string
-  role: 'PARENT'
+  name: string | null
+  email: string | null
+  role: string
   children: Child[]
 }
 
@@ -47,6 +47,8 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState('')
   const router = useRouter()
+  // Suppress unused variable warning - router is kept for future use
+  void router
 
   const generatePassword = () => {
     // Only generate password on client-side to prevent hydration issues
@@ -117,8 +119,8 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatDate = (dateInput: string | Date) => {
+    const date = new Date(dateInput)
     
     // Create a completely deterministic format to avoid hydration issues
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -173,7 +175,7 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
             Manage Children
           </h2>
           <p className="text-muted-foreground">
-            Add and manage your children's accounts. Create secure login credentials for each child.
+            Add and manage your children&apos;s accounts. Create secure login credentials for each child.
           </p>
         </motion.div>
         {/* Stats Grid */}
@@ -261,7 +263,7 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="childName">Child's Name</Label>
+                      <Label htmlFor="childName">Child&apos;s Name</Label>
                       <Input
                         id="childName"
                         type="text"
@@ -376,11 +378,11 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
                   <CardHeader className="text-center" style={{ padding: '1.5rem' }}>
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-2">
                       <span className="text-white font-bold text-lg">
-                        {child.name.charAt(0).toUpperCase()}
+                        {(child.name || 'U').charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <CardTitle className="text-base">{child.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{child.email}</p>
+                    <CardTitle className="text-base">{child.name || 'Unknown Child'}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{child.email || 'No email'}</p>
                   </CardHeader>
                   <CardContent className="space-y-4" style={{ padding: '1.5rem', paddingTop: '0' }}>
                     <div className="grid grid-cols-2 gap-4 text-center">

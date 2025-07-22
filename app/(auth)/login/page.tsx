@@ -38,7 +38,7 @@ export default function LoginPage() {
         router.push("/dashboard")
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
@@ -134,7 +134,7 @@ export default function LoginPage() {
 
             <div className="text-center">
               <p className="text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
                   className="text-primary hover:text-primary/80 font-semibold"

@@ -41,25 +41,41 @@ export default function RootLayout({
           storageKey="krp-theme"
         >
           <Toaster
-            position="top-center"
+            position="bottom-center"
+            containerStyle={{
+              zIndex: 99999
+            }}
             toastOptions={{
-              duration: 3000,
+              duration: 4000,
               style: {
-                background: "var(--background)",
-                color: "var(--foreground)",
-                border: "1px solid var(--color-primary)",
-                borderRadius: "10px",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+                zIndex: 99999,
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                minWidth: '300px',
+                padding: '16px'
               },
               success: {
                 style: {
-                  background: "var(--color-success)",
+                  background: "#10B981",
                   color: "#fff",
+                  border: "2px solid #059669",
+                },
+                iconTheme: {
+                  primary: "#fff",
+                  secondary: "#10B981",
                 },
               },
               error: {
                 style: {
-                  background: "var(--color-error)",
+                  background: "#EF4444",
                   color: "#fff",
+                  border: "2px solid #DC2626",
+                },
+                iconTheme: {
+                  primary: "#fff",
+                  secondary: "#EF4444",
                 },
               },
             }}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { User, Mail, Lock, UserPlus, Users } from 'lucide-react'
+import { User, Mail, Lock, UserPlus } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -69,7 +69,7 @@ export default function RegisterPage() {
             </motion.div>
             <div className="space-y-2">
               <CardTitle className="text-2xl">Create Parent Account</CardTitle>
-              <p className="text-sm text-muted-foreground">Manage your children's reward points!</p>
+              <p className="text-sm text-muted-foreground">Manage your children&apos;s reward points!</p>
             </div>
           </CardHeader>
           <CardContent style={{ padding: '2rem', paddingTop: '0' }}>

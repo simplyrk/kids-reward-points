@@ -2,15 +2,22 @@ import { forwardRef } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   children: React.ReactNode
+  className?: string
+  disabled?: boolean
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
+  type?: 'button' | 'submit' | 'reset'
+  form?: string
+  id?: string
+  'aria-label'?: string
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', loading = false, children, disabled, ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'md', loading = false, children, disabled, onClick, type, form, id, 'aria-label': ariaLabel }, ref) => {
     const variants = {
       primary: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg',
       secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -40,7 +47,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           sizes[size],
           className
         )}
-        {...(props as any)}
+        onClick={onClick}
+        type={type}
+        form={form}
+        id={id}
+        aria-label={ariaLabel}
       >
         {loading && (
           <svg className="animate-spin -ml-1 mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

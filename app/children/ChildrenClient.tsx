@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Plus, UserPlus, Star, Calendar, Eye, EyeOff, Copy, Home, LogOut, Key, X, Trash2 } from 'lucide-react'
+import { Users, Plus, UserPlus, Star, Calendar, Eye, EyeOff, Copy, Home, LogOut, Key, X, Trash2, Menu } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -64,6 +64,7 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [childToDelete, setChildToDelete] = useState<Child | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouter()
   // Suppress unused variable warning - router is kept for future use
   void router
@@ -220,7 +221,8 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
             </h1>
           </Link>
 
-          <div className="flex items-center gap-6">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
             <Button variant="ghost" size="sm" asChild>
               <a href="/dashboard">
                 <Home className="w-4 h-4 mr-2" />
@@ -234,6 +236,48 @@ export default function ChildrenClient({ user }: ChildrenClientProps) {
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <div className="relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+              
+              {/* Mobile Menu Dropdown */}
+              {isMobileMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
+                  <div className="py-2">
+                    <a 
+                      href="/dashboard" 
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Home className="w-4 h-4 mr-2" />
+                      Home
+                    </a>
+                    
+                    <button 
+                      onClick={() => {
+                        signOut()
+                        setIsMobileMenuOpen(false)
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left text-red-600 dark:text-red-400"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

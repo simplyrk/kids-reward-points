@@ -23,7 +23,9 @@ import {
   Send,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Menu,
+  X
 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { useEffect } from 'react'
@@ -99,6 +101,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   
   // For parents - view as child
   const [viewAsChildId, setViewAsChildId] = useState<string | null>(null)
+  
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isParent = user.role === 'PARENT' && !viewAsChildId
   const viewingChild = useMemo(() => 
@@ -329,7 +334,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             </h1>
           </motion.div>
 
-          <div className="flex items-center gap-6">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
             {isParent && (
               <Button variant="ghost" size="sm" asChild>
                 <a href="/children">
@@ -360,6 +366,70 @@ export default function DashboardClient({ user }: DashboardClientProps) {
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <div className="relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+              
+              {/* Mobile Menu Dropdown */}
+              {isMobileMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
+                  <div className="py-2">
+                    {isParent && (
+                      <a 
+                        href="/children" 
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Manage Kids
+                      </a>
+                    )}
+                    
+                    {user.role === 'PARENT' && children.length > 0 && (
+                      <div className="px-4 py-2">
+                        <select
+                          value={viewAsChildId || ''}
+                          onChange={(e) => {
+                            setViewAsChildId(e.target.value || null)
+                            setIsMobileMenuOpen(false)
+                          }}
+                          className="w-full flex h-9 px-3 py-1 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Parent View</option>
+                          {children.map((child) => (
+                            <option key={child.id} value={child.id}>
+                              View as {child.name || 'Child'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    
+                    <button 
+                      onClick={() => {
+                        signOut()
+                        setIsMobileMenuOpen(false)
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left text-red-600 dark:text-red-400"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -693,13 +763,18 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     {/* Submit Button */}
                     <Button 
                       type="submit" 
-                      className="w-full" 
+                      className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200" 
                       size="lg"
                       disabled={!selectedChild || !newPointsReason || !newPointsAmount}
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Award {newPointsAmount ? `${newPointsAmount} ` : ''}Points
-                      {selectedChild && children.find(c => c.id === selectedChild) && ` to ${children.find(c => c.id === selectedChild)?.name}`}
+                      <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+                      {selectedChild && children.find(c => c.id === selectedChild) ? (
+                        <>
+                          Award {newPointsAmount ? `${parseInt(newPointsAmount) > 0 ? '+' : ''}${newPointsAmount}` : ''} Points to {children.find(c => c.id === selectedChild)?.name}
+                        </>
+                      ) : (
+                        'Select Child to Award Points'
+                      )}
                     </Button>
                   </form>
                 )}

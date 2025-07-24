@@ -26,6 +26,11 @@
 - `app/api/auth/[...nextauth]/` - NextAuth.js authentication endpoints
 - `app/api/points/` - Points management API
 - `app/api/register/` - User registration API
+- `app/api/activity-requests/` - Activity request management API
+- `app/api/activity-requests/[id]/review/` - Activity request review endpoint
+- `app/api/children/` - Child management API
+- `app/api/children/[id]/` - Individual child operations
+- `app/api/children/credentials/` - Child credential management
 
 ### Reusable Components
 - `app/components/` - App-specific components (Button, Card, Input, theme-toggle)
@@ -39,8 +44,9 @@
 - `lib/utils.ts` - Utility functions (cn for className merging)
 
 ## Database
-- `prisma/schema.prisma` - Database schema with User, Account, Session, Point models
+- `prisma/schema.prisma` - Database schema with User, Account, Session, Point, ActivityRequest models
 - `prisma/migrations/` - Database migration files
+- **Models**: User (parents/children), Point (reward tracking), ActivityRequest (child activity submissions)
 
 ## Static Assets
 - `public/` - Static files including PWA icons and manifest

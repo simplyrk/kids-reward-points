@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Listens to all TypeScript source files, configuration files, and database schema changes to automatically update project documentation",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "prisma/schema.prisma",
+      "package.json",
+      "next.config.mjs",
+      "next.config.ts",
+      "tsconfig.json",
+      "README.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source code files have been modified in this Next.js TypeScript project. Please review the changes and update the documentation accordingly. Focus on:\n\n1. Update the README.md with any new features, API changes, or setup instructions\n2. If there's a /docs folder, update relevant documentation there\n3. Ensure documentation reflects current functionality, dependencies, and architecture\n4. Update any code examples or usage instructions that may have changed\n5. Keep documentation consistent with the current codebase structure and features\n\nPay special attention to:\n- New API routes or endpoints\n- Changes to database schema (Prisma)\n- New components or major refactoring\n- Configuration changes\n- New dependencies or setup requirements"
+  }
+}

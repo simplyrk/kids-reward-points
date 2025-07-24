@@ -7,8 +7,10 @@
 
 ## Database & ORM
 - **PostgreSQL** with Neon serverless database
-- **Prisma** ORM with client generation
+- **Prisma** ORM with client generation and Neon adapter
 - Database migrations managed through Prisma
+- **@neondatabase/serverless** for serverless database connections
+- **@prisma/adapter-neon** for optimized Neon integration
 
 ## Authentication
 - **NextAuth.js v5** (beta) with custom credentials provider
@@ -33,6 +35,9 @@
 - **ESLint** with Next.js configuration
 - **Jest** and **@testing-library/react** for unit testing
 - **Playwright** for end-to-end testing
+- **@next/bundle-analyzer** for bundle analysis
+- **class-variance-authority** and **clsx** for conditional styling
+- **tailwind-merge** for Tailwind class merging
 
 ## Common Commands
 

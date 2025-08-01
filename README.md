@@ -16,6 +16,7 @@ KRP is a modern web application that gamifies household tasks and responsibiliti
 
 - **👨‍👩‍👧‍👦 Family Management** - Parents can create and manage multiple child accounts
 - **🏆 Point System** - Award points for completed tasks and good behavior
+- **🎁 Point Redemption** - Parents can easily redeem points for cash, toys, treats, or experiences
 - **📱 Mobile-First Design** - Works perfectly on phones, tablets, and computers
 - **🔒 Secure Authentication** - Safe login system for both parents and kids
 - **🎨 Kid-Friendly UI** - Colorful, engaging interface that kids love
@@ -114,7 +115,8 @@ Open [http://localhost:3000](http://localhost:3000) to see your app!
 1. Create your parent account
 2. Add your kids as users
 3. Award points for completed tasks
-4. Track progress and achievements
+4. Redeem points when kids want to cash in their rewards
+5. Track progress and achievements
 
 ### For Kids:
 1. Log in with your username (parents will give this to you)

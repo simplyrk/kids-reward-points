@@ -551,7 +551,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 {totalPoints.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                +{weeklyPoints} from last week
+                {weeklyPoints >= 0 ? '+' : ''}{weeklyPoints} from last week
               </p>
             </div>
           </Card>
@@ -621,7 +621,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         {/* Quick Actions for Parents */}
         {isParent && (
           <section style={{ paddingBottom: '4rem' }}>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               {/* Award Points Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
